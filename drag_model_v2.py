@@ -26,7 +26,7 @@ def drag_model(H,labda,slope,model,model_Cr):
     #
     # Example:
     #   [z0,ftauS,d,PsiH] =
-    #   drag_model(1.1,0.13,0,'Raupach1992','Garbrecht2002');
+    #   drag_model(1.1,0.13,0,'Raupach1992','Garbrecht2002')
     #
     # References:
     # ï»¿- Lettau H (1969)
@@ -47,95 +47,95 @@ def drag_model(H,labda,slope,model,model_Cr):
     
     
     # Global constants
-    kappa   = 0.4; #von karman constant
+    kappa   = 0.4 #von karman constant
     
     # Parameters
-    Cs10    = 0.00083; # drag coefficient for skin friction at z=10m (default = 0.00083)
-    c       = 0.25; # parameter of Raupach(1992) model
-    c1      = 7.5; # parameter of Raupach(1992) model
-    A       = 4; # parameter of Macdonald(1998) model
+    Cs10    = 0.00083 # drag coefficient for skin friction at z=10m (default = 0.00083)
+    c       = 0.25 # parameter of Raupach(1992) model
+    c1      = 7.5 # parameter of Raupach(1992) model
+    A       = 4 # parameter of Macdonald(1998) model
     
     # Initialize output
-    z0      = nan;
-    ftauS   = nan;
-    d       = nan;
-    PsiH    = nan;
+    z0      = np.nan
+    ftauS   = np.nan
+    d       = np.nan
+    PsiH    = np.nan
     
     # Parametrization of form drag coefficient (not used in Lettau1969)
     switch model_Cr
         case 'constant'
-            Cr = 0.1;
+            Cr = 0.1
         case 'Banke1980'
-            Cr = (0.012 + 0.012.*slope);
+            Cr = (0.012 + 0.012.*slope)
         case 'Garbrecht2002'
             if H<2.5527
-                Cr = (0.185 + (0.147*H))/2;
+                Cr = (0.185 + (0.147*H))/2
             else
-                Cr = 0.11*log(H/0.2);
+                Cr = 0.11*log(H/0.2)
             end
         case 'KeanSmith2006'
-            Cr = 0.8950*exp(-0.77*(0.5./(4*labda)));
+            Cr = 0.8950*exp(-0.77*(0.5./(4*labda)))
     end
     
     # Drag model
     switch model
         case 'Lettau1969' 
             # roughness length
-            z0 = 0.5.*H*labda;
+            z0 = 0.5.*H*labda
                         
         case 'Raupach1992'
             # displacement height
-            d = H*(1 - (1-exp(-(c1.*labda).^(0.5)))/(c1.*labda).^0.5);
+            d = H*(1 - (1-exp(-(c1.*labda).^(0.5)))/(c1.*labda).^0.5)
             
             # Profile correction
-            PsiH = 0.193;
+            PsiH = 0.193
     
             # Drag coefficient for skin friction at z=H
-            Cs = (Cs10.^(-0.5) - (1/kappa).*(log((10-d)/(H-d))-PsiH)).^(-2);
+            Cs = (Cs10.^(-0.5) - (1/kappa).*(log((10-d)/(H-d))-PsiH)).^(-2)
             
-            a = (c*labda/2)*(Cs+labda*Cr).^(-0.5);
+            a = (c*labda/2)*(Cs+labda*Cr).^(-0.5)
             
             # model for U/u*
-            X = a;
-            crit=1e5;
+            X = a
+            crit=1e5
             while(crit>1e-12)
-                Xold=X;
-                X = a*exp(X);
-                crit=abs((X-Xold)./(X));
+                Xold=X
+                X = a*exp(X)
+                crit=abs((X-Xold)./(X))
             end
-            gamma = 2*X./(c*labda);
+            gamma = 2*X./(c*labda)
     
             # roughness length
-            z0 = (H-d).*exp(-kappa.*gamma).*exp(PsiH);
+            z0 = (H-d).*exp(-kappa.*gamma).*exp(PsiH)
             
             # stress partionning
-            beta  = Cr./Cs;
-            ftauS = 1./(1+beta*labda);
+            beta  = Cr./Cs
+            ftauS = 1./(1+beta*labda)
                     
         case 'Raupach1994'
             # displacement height
-            d = H*(1 - (1-exp(-(c1.*labda).^(0.5)))/(c1.*labda).^0.5);
+            d = H*(1 - (1-exp(-(c1.*labda).^(0.5)))/(c1.*labda).^0.5)
             
-            PsiH = 0.193;
+            PsiH = 0.193
             
             # Drag coefficient for skin friction at z=H
-            Cs = (Cs10.^(-0.5) - (1/kappa).*(log((10-d)/(H-d))-PsiH)).^(-2);
+            Cs = (Cs10.^(-0.5) - (1/kappa).*(log((10-d)/(H-d))-PsiH)).^(-2)
             
             # model for U/u*
-            gamma_s = (Cs + Cr.*labda).^(-0.5);
+            gamma_s = (Cs + Cr.*labda).^(-0.5)
             
             # roughness length
-            z0 = (H-d).*(exp(kappa.*gamma_s)-PsiH).^(-1);
+            z0 = (H-d).*(exp(kappa.*gamma_s)-PsiH).^(-1)
     
             # stress partionning
-            beta  = Cr./Cs;
-            ftauS = 1./(1+beta*labda);
+            beta  = Cr./Cs
+            ftauS = 1./(1+beta*labda)
             
         case 'Macdonald1998'
             # displacement height
-            d =  1 + A.^(-labda) .* (labda  - 1);
+            d =  1 + A.^(-labda) .* (labda  - 1)
             # roughness length
-            z0 = (H - d).*exp(-((Cr./(kappa.^2)).*labda) .^(-0.5));   
+            z0 = (H - d).*exp(-((Cr./(kappa.^2)).*labda) .^(-0.5))   
     end
     
     end
