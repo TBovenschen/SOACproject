@@ -64,6 +64,28 @@ d       = np.nan
 PsiH    = np.nan
 
 # Parametrization of form drag coefficient (not used in Lettau1969)
+def constant():
+    return 0.1
+def Banke1980():
+    return (0.012+0.012*slope)
+def Garbrecht2002():
+    if H<2.5527:
+        Cr = (0.185 + (0.147*H))/2
+    else:
+        Cr = 0.11*log(H/0.2)
+    return Cr
+def KeanSmith2006():
+    return 0.8950*np.exp(-0.77*(0.5/(4*labda)))
+def model_Cr(i):
+    switcher = {
+        1: constant,
+        2: Banke1980,
+        3: Garbrecht2002,
+        4: KeanSmith2006}
+    func = switcher.get()
+    return func
+
+
 switch model_Cr
     case 'constant'
         Cr = 0.1
