@@ -78,64 +78,62 @@ def drag_model(H,labda,slope,model,model_Cr):
     end
     
     # Drag model
-    switch model
-        case 'Lettau1969' 
-            # roughness length
-            z0 = 0.5.*H*labda
+    if model == 'Lettau1969':
+       # roughness length
+        z0 = 0.5*H*labda
                         
-        case 'Raupach1992'
-            # displacement height
-            d = H*(1 - (1-exp(-(c1.*labda).^(0.5)))/(c1.*labda).^0.5)
+    elif model=='Raupach1992':
+        # displacement height
+        d = H*(1 - (1-exp(-(c1*labda)**(0.5)))/(c1*labda)**0.5)
+
+        # Profile correction
+        PsiH = 0.193
+
+        # Drag coefficient for skin friction at z=H
+        Cs = (Cs10**(-0.5) - (1/kappa)*(log((10-d)/(H-d))-PsiH))**(-2)
+
+        a = (c*labda/2)*(Cs+labda*Cr)**(-0.5)
+
+        # model for U/u*
+        X = a
+        crit=1e5
+        while (crit > 1e-12):
+            Xold=X
+            X = a*np.exp(X)
+            crit=abs((X-Xold)/(X))
+        gamma = 2*X/(c*labda)
+
+        # roughness length
+        z0 = (H-d)*np.exp(-kappa*gamma)*exp(PsiH)
+
+        # stress partionning
+        beta  = Cr/Cs
+        ftauS = 1./(1+beta*labda)
+
+    elif model=='Raupach1994':
+        # displacement height
+        d = H*(1 - (1-exp(-(c1*labda)**(0.5)))/(c1*labda)**0.5)
+
+        PsiH = 0.193
+
+        # Drag coefficient for skin friction at z=H
+        Cs = (Cs10**(-0.5) - (1/kappa)*(np.log((10-d)/(H-d))-PsiH))**(-2)
+
+        # model for U/u*
+        gamma_s = (Cs + Cr*labda)**(-0.5)
+
+        # roughness length
+        z0 = (H-d)*(np.exp(kappa*gamma_s)-PsiH)**(-1)
+
+        # stress partionning
+        beta  = Cr/Cs
+        ftauS = 1/(1+beta*labda)
             
-            # Profile correction
-            PsiH = 0.193
-    
-            # Drag coefficient for skin friction at z=H
-            Cs = (Cs10.^(-0.5) - (1/kappa).*(log((10-d)/(H-d))-PsiH)).^(-2)
-            
-            a = (c*labda/2)*(Cs+labda*Cr).^(-0.5)
-            
-            # model for U/u*
-            X = a
-            crit=1e5
-            while(crit>1e-12)
-                Xold=X
-                X = a*exp(X)
-                crit=abs((X-Xold)./(X))
-            end
-            gamma = 2*X./(c*labda)
-    
-            # roughness length
-            z0 = (H-d).*exp(-kappa.*gamma).*exp(PsiH)
-            
-            # stress partionning
-            beta  = Cr./Cs
-            ftauS = 1./(1+beta*labda)
-                    
-        case 'Raupach1994'
-            # displacement height
-            d = H*(1 - (1-exp(-(c1.*labda).^(0.5)))/(c1.*labda).^0.5)
-            
-            PsiH = 0.193
-            
-            # Drag coefficient for skin friction at z=H
-            Cs = (Cs10.^(-0.5) - (1/kappa).*(log((10-d)/(H-d))-PsiH)).^(-2)
-            
-            # model for U/u*
-            gamma_s = (Cs + Cr.*labda).^(-0.5)
-            
-            # roughness length
-            z0 = (H-d).*(exp(kappa.*gamma_s)-PsiH).^(-1)
-    
-            # stress partionning
-            beta  = Cr./Cs
-            ftauS = 1./(1+beta*labda)
-            
-        case 'Macdonald1998'
-            # displacement height
-            d =  1 + A.^(-labda) .* (labda  - 1)
-            # roughness length
-            z0 = (H - d).*exp(-((Cr./(kappa.^2)).*labda) .^(-0.5))   
+    elif model=='Macdonald1998':
+        # displacement height
+        d =  1 + A**(-labda) * (labda  - 1)
+        # roughness length
+        z0 = (H - d)*exp(-((Cr/(kappa**2))*labda)**(-0.5))
     end
     
     end

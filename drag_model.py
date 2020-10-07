@@ -153,14 +153,11 @@ def drag_model(H,labda,slope,model,model_Cr):
     
         return z0
     
-    def switch_model(argument, H, labda, kappa, Cr):
-        switcher = {
-            1: Lettau1969(H, d, labda, kappa, Cr),
-            2: Raupach1992(H, d, labda, kappa, Cr),
-            3: Raupach1994(H, d, labda, kappa, Cr),
-            4: Macdonald1998(H, d, labda, kappa, Cr),
-        }
-        # Get the function from switcher dictionary
-        func = switcher.get(argument)
-        # Execute the function
-        print(func())
+    switch_model = {
+        1: Lettau1969
+        2: Raupach1992(H, labda, kappa, Cr),
+        3: Raupach1994(H, labda, kappa, Cr),
+        4: Macdonald1998(H, labda, kappa, Cr),
+    }
+
+switch_model(1)
