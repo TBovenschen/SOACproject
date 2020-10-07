@@ -63,16 +63,16 @@ def drag_model(H,labda,slope,model,model_Cr):
     PsiH    = np.nan
     
     # Parametrization of form drag coefficient (not used in Lettau1969)
-    if model_cr=='constant':
+    if model_Cr=='constant':
         Cr = 0.1
-    elif model_cr == 'Banke1980':
+    elif model_Cr == 'Banke1980':
         Cr = (0.012 + 0.012*slope)
-    elif model_cr == 'Garbrecht2002':
+    elif model_Cr == 'Garbrecht2002':
         if (H<2.5527):
             Cr = (0.185 + (0.147*H))/2
         else:
-            Cr = 0.11*log(H/0.2)
-    elif model_cr == 'KeanSmith2006':
+            Cr = 0.11*np.log(H/0.2)
+    elif model_Cr == 'KeanSmith2006':
         Cr = 0.8950*np.exp(-0.77*(0.5/(4*labda)))
 
     
@@ -83,13 +83,13 @@ def drag_model(H,labda,slope,model,model_Cr):
                         
     elif model=='Raupach1992':
         # displacement height
-        d = H*(1 - (1-exp(-(c1*labda)**(0.5)))/(c1*labda)**0.5)
+        d = H*(1 - (1-np.exp(-(c1*labda)**(0.5)))/(c1*labda)**0.5)
 
         # Profile correction
         PsiH = 0.193
 
         # Drag coefficient for skin friction at z=H
-        Cs = (Cs10**(-0.5) - (1/kappa)*(log((10-d)/(H-d))-PsiH))**(-2)
+        Cs = (Cs10**(-0.5) - (1/kappa)*(np.log((10-d)/(H-d))-PsiH))**(-2)
 
         a = (c*labda/2)*(Cs+labda*Cr)**(-0.5)
 
@@ -103,7 +103,7 @@ def drag_model(H,labda,slope,model,model_Cr):
         gamma = 2*X/(c*labda)
 
         # roughness length
-        z0 = (H-d)*np.exp(-kappa*gamma)*exp(PsiH)
+        z0 = (H-d)*np.exp(-kappa*gamma)*np.exp(PsiH)
 
         # stress partionning
         beta  = Cr/Cs
@@ -111,7 +111,7 @@ def drag_model(H,labda,slope,model,model_Cr):
 
     elif model=='Raupach1994':
         # displacement height
-        d = H*(1 - (1-exp(-(c1*labda)**(0.5)))/(c1*labda)**0.5)
+        d = H*(1 - (1-np.exp(-(c1*labda)**(0.5)))/(c1*labda)**0.5)
 
         PsiH = 0.193
 
@@ -132,7 +132,4 @@ def drag_model(H,labda,slope,model,model_Cr):
         # displacement height
         d =  1 + A**(-labda) * (labda  - 1)
         # roughness length
-        z0 = (H - d)*exp(-((Cr/(kappa**2))*labda)**(-0.5))
-    end
-    
-    end
+        z0 = (H - d)*np.exp(-((Cr/(kappa**2))*labda)**(-0.5))
