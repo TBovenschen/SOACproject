@@ -5,6 +5,7 @@ Created on Wed Oct  7 12:04:55 2020
 
 @author: tychobovenschen
 """
+import numpy as np
 
 def drag_model(H,labda,slope,model,model_Cr):
     # Calculates the roughness length for momentum of a surface, given the height and
@@ -62,20 +63,18 @@ def drag_model(H,labda,slope,model,model_Cr):
     PsiH    = np.nan
     
     # Parametrization of form drag coefficient (not used in Lettau1969)
-    switch model_Cr
-        case 'constant'
-            Cr = 0.1
-        case 'Banke1980'
-            Cr = (0.012 + 0.012.*slope)
-        case 'Garbrecht2002'
-            if H<2.5527
-                Cr = (0.185 + (0.147*H))/2
-            else
-                Cr = 0.11*log(H/0.2)
-            end
-        case 'KeanSmith2006'
-            Cr = 0.8950*exp(-0.77*(0.5./(4*labda)))
-    end
+    if model_cr=='constant':
+        Cr = 0.1
+    elif model_cr == 'Banke1980':
+        Cr = (0.012 + 0.012*slope)
+    elif model_cr == 'Garbrecht2002':
+        if (H<2.5527):
+            Cr = (0.185 + (0.147*H))/2
+        else:
+            Cr = 0.11*log(H/0.2)
+    elif model_cr == 'KeanSmith2006':
+        Cr = 0.8950*np.exp(-0.77*(0.5/(4*labda)))
+
     
     # Drag model
     switch model

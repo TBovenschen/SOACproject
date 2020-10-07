@@ -85,7 +85,7 @@ def drag_model(H,labda,slope,model,model_Cr):
         func = switcher.get()
         return func
     
-    
+    Cr = model_Cr(3)
     # Drag model
     def Lettau1969(H, labda, kappa, Cr):
         # roughness length
@@ -164,3 +164,5 @@ def drag_model(H,labda,slope,model,model_Cr):
         func = switcher.get(argument)
         # Execute the function
         print(func())
+
+drag_model()
