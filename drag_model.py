@@ -6,7 +6,9 @@ Created on Wed Oct  7 10:52:56 2020
 @author: tychobovenschen
 """
 
-function [z0,ftauS,d,PsiH] = drag_model(H,lambda,slope,model,model_Cr)
+import numpy as np
+
+def drag_model(H,labda,slope,model,model_Cr):
 # Calculates the roughness length for momentum of a surface, given the height and
 # spacing density of the roughness obstacles. Different bulk drag models can be used.
 #
@@ -56,10 +58,10 @@ c1      = 7.5 # parameter of Raupach(1992) model
 A       = 4 # parameter of Macdonald(1998) model
 
 # Initialize output
-z0      = nan
-ftauS   = nan
-d       = nan
-PsiH    = nan
+z0      = np.nan
+ftauS   = np.nan
+d       = np.nan
+PsiH    = np.nan
 
 # Parametrization of form drag coefficient (not used in Lettau1969)
 switch model_Cr
@@ -78,64 +80,80 @@ switch model_Cr
 end
 
 # Drag model
-switch (model):
-    case 'Lettau1969' 
-        # roughness length
-        z0 = 0.5.*H*lambda
-                    
-    case 'Raupach1992'
-        # displacement height
-        d = H*(1 - (1-exp(-(c1.*lambda).^(0.5)))/(c1.*lambda).^0.5)
-        
-        # Profile correction
-        PsiH = 0.193
+def Lettau1969(H, labda, kappa, Cr):
+    # roughness length
+    z0 = 0.5 * H * labda
+    return z0
 
-        # Drag coefficient for skin friction at z=H
-        Cs = (Cs10.^(-0.5) - (1/kappa).*(log((10-d)/(H-d))-PsiH)).^(-2)
-        
-        a = (c*lambda/2)*(Cs+lambda*Cr).^(-0.5)
-        
-        # model for U/u*
-        X = a
-        crit=1e5
-        while(crit>1e-12):
-            Xold=X
-            X = a*exp(X)
-            crit=abs((X-Xold)./(X))
-        gamma = 2*X./(c*lambda)
 
-        # roughness length
-        z0 = (H-d).*exp(-kappa.*gamma).*exp(PsiH)
-        
-        # stress partionning
-        beta  = Cr./Cs
-        ftauS = 1./(1+beta*lambda)
-                
-    case 'Raupach1994'
-        # displacement height
-        d = H*(1 - (1-exp(-(c1.*lambda).^(0.5)))/(c1.*lambda).^0.5)
-        
-        PsiH = 0.193
-        
-        # Drag coefficient for skin friction at z=H
-        Cs = (Cs10.^(-0.5) - (1/kappa).*(log((10-d)/(H-d))-PsiH)).^(-2)
-        
-        # model for U/u*
-        gamma_s = (Cs + Cr.*lambda).^(-0.5)
-        
-        # roughness length
-        z0 = (H-d).*(exp(kappa.*gamma_s)-PsiH).^(-1)
+def Raupach1992(H, labda, kappa, Cr):
+    # displacement height
+    d = H * (1 - (1 - np.exp(-(c1 * labda)**(0.5))) / (c1 * labda)**0.5)
 
-        # stress partionning
-        beta  = Cr./Cs
-        ftauS = 1./(1+beta*lambda)
-        
-    case 'Macdonald1998'
-        # displacement height
-        d =  1 + A.^(-lambda) .* (lambda  - 1)
-        # roughness length
-        z0 = (H - d).*exp(-((Cr./(kappa.^2)).*lambda) .^(-0.5))   
-end
+    # Profile correction
+    PsiH = 0.193
 
-end
+    # Drag coefficient for skin friction at z=H
+    Cs = (Cs10**(-0.5) - (1 / kappa) * (np.log((10 - d) / (H - d)) - PsiH))**(-2)
 
+    a = (c * labda / 2) * (Cs + labda * Cr)**(-0.5)
+
+    # model for U/u*
+    X = a
+    crit = 1e5
+    while (crit > 1e-12):
+        Xold = X
+        X = a * np.exp(X)
+        crit = abs((X - Xold) / (X))
+    gamma = 2 * X / (c * labda)
+
+    # roughness length
+    z0 = (H - d) * np.exp(-kappa * gamma) * np.exp(PsiH)
+
+    # stress partionning
+    beta = Cr / Cs
+    ftauS = 1 / (1 + beta * labda)
+
+    return z0, beta, ftauS
+
+def Raupach1994(H, labda, kappa, Cr):
+    # displacement height
+    d = H * (1 - (1 - np.exp(-(c1 * labda)**(0.5))) / (c1 * labda)**0.5)
+
+    PsiH = 0.193
+
+    # Drag coefficient for skin friction at z=H
+    Cs = (Cs10**(-0.5) - (1 / kappa) * (np.log((10 - d) / (H - d)) - PsiH))**(-2)
+
+    # model for U/u*
+    gamma_s = (Cs + Cr * labda)**(-0.5)
+
+    # roughness length
+    z0 = (H - d) * (np.exp(kappa * gamma_s) - PsiH)**(-1)
+
+    # stress partionning
+    beta = Cr / Cs
+    ftauS = 1 / (1 + beta * labda)
+
+    return z0, beta, ftauS
+
+def Macdonald1998(H, labda, kappa, Cr):
+    # displacement height
+    d = 1 + A**(-labda) * (labda - 1)
+
+    # roughness length
+    z0 = (H - d) * np.exp(-((Cr / (kappa**2)) * labda )**(-0.5))
+
+    return z0
+
+def switch_model(argument, H, labda, kappa, Cr):
+    switcher = {
+        1: Lettau1969(H, d, labda, kappa, Cr),
+        2: Raupach1992(H, d, labda, kappa, Cr),
+        3: Raupach1994(H, d, labda, kappa, Cr),
+        4: Macdonald1998(H, d, labda, kappa, Cr),
+    }
+    # Get the function from switcher dictionary
+    func = switcher.get(argument)
+    # Execute the function
+    print(func())
