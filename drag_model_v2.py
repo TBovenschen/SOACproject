@@ -136,4 +136,4 @@ def drag_model(H,labda,slope,model,model_Cr):
 
     return z0, ftauS, d, PsiH
 
-a = drag_model(1.1,0.13,0,'Raupach1992','Garbrecht2002');
+a, b, c, d = drag_model(1.1,0.13,0,'Raupach1992','Garbrecht2002');
