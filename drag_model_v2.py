@@ -80,7 +80,7 @@ def drag_model(H,labda,slope,model,model_Cr):
     if model == 'Lettau1969':
        # roughness length
         z0 = 0.5*H*labda
-                            
+                        
     elif model=='Raupach1992':
         # displacement height
         d = H*(1 - (1-np.exp(-(c1*labda)**(0.5)))/(c1*labda)**0.5)
@@ -133,3 +133,7 @@ def drag_model(H,labda,slope,model,model_Cr):
         d =  1 + A**(-labda) * (labda  - 1)
         # roughness length
         z0 = (H - d)*np.exp(-((Cr/(kappa**2))*labda)**(-0.5))
+
+    return z0, ftauS, d, PsiH
+
+a, b, c, d = drag_model(1.1,0.13,0,'Raupach1992','Garbrecht2002');
